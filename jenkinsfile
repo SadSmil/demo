@@ -27,12 +27,22 @@ pipeline {
             }
         }
 
-        stage('Rapport') {
+       stage('Rapport') {
             steps {
+                // 1. Garder votre rapport HTML actuel (Karate)
                 publishHTML(target: [
                     reportDir: 'target/karate-reports',
                     reportFiles: 'karate-summary.html',
                     reportName: 'Karate Report'
+                ])
+
+                // 2. Ajouter l'étape Allure pour l'UI Jenkins
+                allure([
+                    includeProperties: false,
+                    jdk: '',
+                    properties: [],
+                    reportBuildPolicy: 'ALWAYS',
+                    results: [[path: 'target/allure-results']]
                 ])
             }
         }
