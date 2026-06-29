@@ -50,16 +50,17 @@ pipeline {
             }
         }
 
-        stage('Rapport Allure') {
-            agent any
-            steps {
-                unstash 'allure-results'
-                allure([
-                    includeProperties: false,
-                    jdk: '',
-                    results: [[path: 'allure-results']]
-                ])
-            }
-        }
+   stage('Rapport Allure') {
+    agent any
+    steps {
+        sh 'rm -rf allure-results'   // ← vider d'abord les fichiers du checkout
+        unstash 'allure-results'
+        allure([
+            includeProperties: false,
+            jdk: '',
+            results: [[path: 'allure-results']]
+        ])
+    }
+    }
     }
 }
