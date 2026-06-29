@@ -1,5 +1,5 @@
 pipeline {
-    agent none  // ← on gère l'agent stage par stage
+    agent none
 
     parameters {
         booleanParam(name: 'LANCER_TOUS_LES_TESTS', defaultValue: false, description: 'Cocher pour lancer tous les tests')
@@ -28,6 +28,7 @@ pipeline {
             }
             post {
                 always {
+                    sh 'chmod -R 777 allure-results || true'  // ← fix permissions
                     stash includes: 'allure-results/**', name: 'allure-results'
                 }
             }
@@ -50,7 +51,7 @@ pipeline {
         }
 
         stage('Rapport Allure') {
-            agent any  // ← s'exécute sur le host Jenkins, pas dans Docker
+            agent any
             steps {
                 unstash 'allure-results'
                 allure([
