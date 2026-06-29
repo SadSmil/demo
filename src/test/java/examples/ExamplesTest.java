@@ -1,17 +1,22 @@
+package examples;
+
+import com.intuit.karate.Results;
+import com.intuit.karate.Runner;
+
 import io.qameta.allure.karate.AllureKarate;
-import java.io.File; // Ajoutez cet import
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class ExamplesTest {
 
     @Test
     void testParallel() {
-        // 1. Forcer la création du dossier avant le lancement
-        new File("target/allure-results").mkdirs();
-
         Results results = Runner.path("classpath:examples")
-                .hook(new AllureKarate()) // AllureKarate écrit ici
+        .hook(new AllureKarate())
+                //.outputCucumberJson(true)
                 .parallel(5);
-                
         assertEquals(0, results.getFailCount(), results.getErrorMessages());
     }
+
 }
