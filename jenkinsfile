@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.9-eclipse-temurin-17'
-            args '-u=root'
-        }
-    }
+    agent none  // ← on gère l'agent stage par stage
 
     parameters {
         booleanParam(name: 'LANCER_TOUS_LES_TESTS', defaultValue: false, description: 'Cocher pour lancer tous les tests')
@@ -14,6 +9,12 @@ pipeline {
     stages {
 
         stage('Lancer les tests Karate') {
+            agent {
+                docker {
+                    image 'maven:3.9-eclipse-temurin-17'
+                    args '-u=root'
+                }
+            }
             steps {
                 script {
                     if (params.LANCER_TOUS_LES_TESTS) {
@@ -25,9 +26,20 @@ pipeline {
                     }
                 }
             }
+            post {
+                always {
+                    stash includes: 'allure-results/**', name: 'allure-results'
+                }
+            }
         }
 
-        stage('Rapport') {
+        stage('Rapport Karate') {
+            agent {
+                docker {
+                    image 'maven:3.9-eclipse-temurin-17'
+                    args '-u=root'
+                }
+            }
             steps {
                 publishHTML(target: [
                     reportDir: 'target/karate-reports',
@@ -36,14 +48,17 @@ pipeline {
                 ])
             }
         }
+
         stage('Rapport Allure') {
-    steps {
-        allure([
-            includeProperties: false,
-            jdk: '',
-            results: [[path: 'allure-results']]
-        ])
-    }
-}
+            agent any  // ← s'exécute sur le host Jenkins, pas dans Docker
+            steps {
+                unstash 'allure-results'
+                allure([
+                    includeProperties: false,
+                    jdk: '',
+                    results: [[path: 'allure-results']]
+                ])
+            }
+        }
     }
 }
