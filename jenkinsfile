@@ -23,27 +23,17 @@ pipeline {
                         echo "Lancement du tag : ${params.TAG}"
                         sh "mvn test -Dkarate.options='--tags ${params.TAG}'"
                     }
-                    // On garde les résultats Allure avant que le conteneur ne soit détruit
-                    stash name: 'allure-results-stash', includes: 'target/allure-results/**'
                 }
             }
         }
 
-       stage('Rapport') {
+        stage('Rapport') {
             steps {
-                script {
-                    // On récupère les résultats sur l'hôte Jenkins
-                    unstash 'allure-results-stash'
-                    
-                    // Génération du rapport via le plugin Allure (qui a accès aux outils locaux)
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [[path: 'target/allure-results']]
-                    ])
-                }
+                publishHTML(target: [
+                    reportDir: 'target/karate-reports',
+                    reportFiles: 'karate-summary.html',
+                    reportName: 'Karate Report'
+                ])
             }
         }
     }
